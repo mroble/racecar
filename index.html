@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +22,6 @@ const TRACK_ROWS = 15;
 var trackGrid = new Array(TRACK_COLS * TRACK_ROWS);
 var tracksLeft = 0;
 
-
 var canvas, canvasContext;
 
 var mouseX = 0;
@@ -36,19 +34,19 @@ function updateMousePos(evt) {
 	mouseX = evt.clientX - rect.left - root.scrollLeft;
 	mouseY = evt.clientY - rect.top - root.scrollTop;
 
-	
+	// cheat / hack to test ball in any position
+	/*ballX = mouseX;
+	ballY = mouseY;
+	ballSpeedX = 4;
+	ballSpeedY = -4;*/
 }
 
-function trackReset(){
-	tracksLeft = 0;
-	for (var i = 0; i < 3 * TRACK_COLS * TRACK_ROWS ; i++) {
-		trackGrid[i] = false;
-	}
-	for(var i = 3 * TRACK_COLS; i < TRACK_COLS * TRACK_ROWS; i++) {
+function trackReset() {
+	for(var i=0; i<TRACK_COLS * TRACK_ROWS; i++) {
 		trackGrid[i] = true;
 		tracksLeft++;
-} //end of for each Track
-} //end of TrackReset function
+	} // end of for each track
+} // end of trackReset func
 
 window.onload = function() {
 	canvas = document.getElementById('gameCanvas');
@@ -58,7 +56,7 @@ window.onload = function() {
 	setInterval(updateAll, 1000/framesPerSecond);
 
 	canvas.addEventListener('mousemove', updateMousePos);
-	
+
 	trackReset();
 	ballReset();
 }
@@ -73,8 +71,7 @@ function ballReset() {
 	ballY = canvas.height/2;
 }
 
-
-function ballMove(){
+function ballMove() {
 	ballX += ballSpeedX;
 	ballY += ballSpeedY;
 
@@ -89,15 +86,13 @@ function ballMove(){
 	}
 	if(ballY > canvas.height) { // bottom
 		ballReset();
-		TrackReset();
+		trackReset();
 	}
-
 }
 
-function isTrackAtRowCol(col, row) {
-
+function isTrackAtColRow(col, row) {
 	if(col >= 0 && col < TRACK_COLS &&
-		row >=0 && row < TRACK_ROWS) {
+		row >= 0 && row < TRACK_ROWS) {
 		 var trackIndexUnderCoord = rowColToArrayIndex(col, row);
 		 return trackGrid[trackIndexUnderCoord];
 	} else {
@@ -105,92 +100,80 @@ function isTrackAtRowCol(col, row) {
 	}
 }
 
-function ballTrackHandling(){
+function ballTrackHandling() {
 	var ballTrackCol = Math.floor(ballX / TRACK_W);
 	var ballTrackRow = Math.floor(ballY / TRACK_H);
 	var trackIndexUnderBall = rowColToArrayIndex(ballTrackCol, ballTrackRow);
-	
+
 	if(ballTrackCol >= 0 && ballTrackCol < TRACK_COLS &&
-		ballTrackRow >=0 && ballTrackRow < TRACK_ROWS) {
+		ballTrackRow >= 0 && ballTrackRow < TRACK_ROWS) {
 
-		if(isTrackAtRowCol(ballTrackCol, ballTrackRow)) {
-		trackGrid[TrackIndexUnderBall] = false;
-		tracksLeft--;
-		//console.log(TracksLeft);
-		
-		var prevBallX = ballX - ballSpeedX;
-		var prevBallY = ballY - ballSpeedY;
-		var prevTrackCol = Math.floor(prevBallX /TRACK_W);
-		var prevTrackRow = Math.floor(prevBallY/TRACK_H);
+		if(isTrackAtColRow( ballTrackCol,ballTrackRow )) {
+			trackGrid[trackIndexUnderBall] = false;
+			tracksLeft--;
+			// console.log(tracksLeft);
 
-		var bothTestsFailed = true;
+			var prevBallX = ballX - ballSpeedX;
+			var prevBallY = ballY - ballSpeedY;
+			var prevTrackCol = Math.floor(prevBallX / TRACK_W);
+			var prevTrackRow = Math.floor(prevBallY / TRACK_H);
 
-		if(prevTrackCol != ballTrackCol) {
+			var bothTestsFailed = true;
 
-			if(isTrackAtRowCol(prevTrackCol, ballTrackRow) == false) {
-				ballSpeedX *=-1;
-				bothTestsFailed = false;
+			if(prevTrackCol != ballTrackCol) {
+				if(isTrackAtColRow(prevTrackCol, ballTrackRow) == false) {
+					ballSpeedX *= -1;
+					bothTestsFailed = false;
+				}
 			}
-		}
-
-			if(prevTrackRow != ballTrackRow) {			
-				if(isTrackAtRowCol(ballTrackCol, prevTrackRow) == false) {
-				ballSpeedY *= -1;
-				bothTestsFailed = false;
+			if(prevTrackRow != ballTrackRow) {
+				if(isTrackAtColRow(ballTrackCol, prevTrackRow) == false) {
+					ballSpeedY *= -1;
+					bothTestsFailed = false;
 				}
 			}
 
-		if (bothTestsFailed) { //armpit case, prevents ball from going through 
-			ballSpeedX *= -1;
-			ballSpeedY *= -1;
-		}
-	
-		} //end of Track found
-	} //end of valid col and row
+			if(bothTestsFailed) { // armpit case, prevents ball from going through
+				ballSpeedX *= -1;
+				ballSpeedY *= -1;
+			}
 
-} //end of ballTrackHandling func
-
-
-
+		} // end of track found
+	} // end of valid col and row
+} // end of ballTrackHandling func
 
 function moveAll() {
 	ballMove();
-
-	ballTrackHandling();
-
 	
+	ballTrackHandling();
 }
 
-
-function rowColToArrayIndex (col, row) {
+function rowColToArrayIndex(col, row) {
 	return col + TRACK_COLS * row;
 }
 
-
 function drawTracks() {
-	for(var eachRow = 0; eachRow < TRACK_ROWS; eachRow++) {
-		for(var eachCol = 0;eachCol < TRACK_COLS; eachCol++) {
-		
-		var arrayIndex = rowColToArrayIndex(eachCol, eachRow);
-		if(trackGrid[arrayIndex]){
-			colorRect(TRACK_W*eachCol,TRACK_H * eachRow, TRACK_W-TRACK_GAP, TRACK_H-TRACK_GAP, 'blue');
-		}	//end of is this Track here
 
+	for(var eachRow=0;eachRow<TRACK_ROWS;eachRow++) {
+		for(var eachCol=0;eachCol<TRACK_COLS;eachCol++) {
 
-	} //end of for each Track
-}
-} //end of drawTracks()
+			var arrayIndex = rowColToArrayIndex(eachCol, eachRow); 
+
+			if(trackGrid[arrayIndex]) {
+				colorRect(TRACK_W*eachCol,TRACK_H*eachRow,
+					TRACK_W-TRACK_GAP,TRACK_H-TRACK_GAP, 'blue');
+			} // end of is this track here
+		} // end of for each track
+	} // end of for each row
+
+} // end of drawTracks func
 
 function drawAll() {
 	colorRect(0,0, canvas.width,canvas.height, 'black'); // clear screen
 
 	colorCircle(ballX,ballY, 10, 'white'); // draw ball
 
-
 	drawTracks();
-
-
-
 }
 
 function colorRect(topLeftX,topLeftY, boxWidth,boxHeight, fillColor) {
@@ -201,15 +184,15 @@ function colorRect(topLeftX,topLeftY, boxWidth,boxHeight, fillColor) {
 function colorCircle(centerX,centerY, radius, fillColor) {
 	canvasContext.fillStyle = fillColor;
 	canvasContext.beginPath();
-	canvasContext.arc(centerX,centerY, radius, 0,Math.PI*2, true);
+	canvasContext.arc(centerX,centerY, 10, 0,Math.PI*2, true);
 	canvasContext.fill();
 }
 
-
-function colorText(showWords, textX, textY, fillColor) {
+function colorText(showWords, textX,textY, fillColor) {
 	canvasContext.fillStyle = fillColor;
 	canvasContext.fillText(showWords, textX, textY);
 }
+
 </script>
 
 </body>
